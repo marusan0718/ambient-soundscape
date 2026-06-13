@@ -5,13 +5,14 @@ const appFallbackWeather = window.fallbackWeather;
 const appFetchWeather = window.fetchWeather;
 const tideProvider = new AppDemoTideProvider();
 const audioEngine = new AppAudioEngine();
+const FALLBACK_LOCATION = {
+  name: "Takanawa Gateway Station",
+  latitude: 35.6355,
+  longitude: 139.7407
+};
 const appState = {
   weather: appFallbackWeather(),
-  location: {
-    name: "Takanawa Gateway Station",
-    latitude: 35.6355,
-    longitude: 139.7407
-  },
+  location: { ...FALLBACK_LOCATION },
   environmentMode: "automatic",
   simulation: {
     timeBand: "Afternoon",
@@ -148,6 +149,38 @@ function updateSimulationState() {
   } else {
     tick();
   }
+}
+
+function updateCurrentLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not available. Using fallback location.");
+      resolve(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        appState.location = {
+          name: "Current Location",
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+        lastWeatherFetchAt = 0;
+        resolve(true);
+      },
+      (error) => {
+        appState.location = { ...FALLBACK_LOCATION };
+        console.warn("Current location is not available. Using fallback location:", error);
+        resolve(false);
+      },
+      {
+        enableHighAccuracy: false,
+        maximumAge: 10 * 60 * 1000,
+        timeout: 10000
+      }
+    );
+  });
 }
 
 function createSimulationWeather() {
@@ -440,7 +473,7 @@ bindControls();
 resetSettings();
 updatePlaybackUi();
 updateSimulationState();
-updateWeather({ force: true }).then(() => {
+updateCurrentLocation().then(() => updateWeather({ force: true })).then(() => {
   lastEnvTextUpdate = 0;
   tick();
 });
