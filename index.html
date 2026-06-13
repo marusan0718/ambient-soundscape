@@ -34,15 +34,11 @@
 
           <div class="home-readout">
             <section class="active-elements" id="activeElements" aria-label="音の構成要素">
-              <span id="sound-surface" data-source="analogPad" data-label="水面">○ 水面</span>
-              <span id="sound-afterglow" data-source="dreamPad" data-label="余韻">○ 余韻</span>
-              <span id="sound-flow" data-source="ambientPiano" data-label="流れ">○ 流れ</span>
-              <span id="sound-light" data-source="glassBell" data-label="光">○ 光</span>
-              <span id="sound-sparkle" data-source="glockenspiel" data-label="きらめき">○ きらめき</span>
-              <span id="sound-particle" data-source="marimba" data-label="粒">○ 粒</span>
-              <span id="sound-ripple" data-source="woodBlock" data-label="波紋">○ 波紋</span>
-              <span id="sound-crystal" data-source="crystalAccent" data-label="結晶">○ 結晶</span>
-              <span id="sound-air" data-source="brushedMetal" data-label="風">○ 風</span>
+              <span id="sound-afterglow" class="sound-token" data-label="余韻">余韻</span>
+              <span id="sound-flow" class="sound-token" data-label="流れ">流れ</span>
+              <span id="sound-sparkle" class="sound-token" data-label="きらめき">きらめき</span>
+              <span id="sound-particle" class="sound-token" data-label="粒">粒</span>
+              <span id="sound-fluctuation" class="sound-token" data-label="揺らぎ">揺らぎ</span>
             </section>
 
             <section class="environment-line" aria-label="current conditions">
@@ -50,10 +46,6 @@
               <span id="humidity"><em>湿度</em> <strong>--%</strong></span>
               <span id="windSpeed"><em>風速</em> <strong>--m/s</strong></span>
               <span id="tideLevel"><em>潮位</em> <strong>--cm</strong></span>
-              <span id="currentSpeed"><em>潮流</em> <strong>--kt</strong></span>
-              <span id="tideDirection"><em>潮</em> <strong>--</strong></span>
-              <span id="highTideEta"><em>満潮まで</em> <strong>--</strong></span>
-              <span id="lowTideEta"><em>干潮まで</em> <strong>--</strong></span>
             </section>
           </div>
         </div>
@@ -75,45 +67,37 @@
 
           <div class="settings-sections">
             <section class="settings-section">
-              <p class="section-label">Sound</p>
+              <p class="section-label">Volume</p>
               <label class="range-row primary-volume">
-                <span>Volume <b id="masterVolumeValue">100%</b></span>
+                <span><b id="masterVolumeValue">100%</b></span>
                 <input id="masterVolume" type="range" min="0" max="100" value="100" step="1" />
               </label>
             </section>
 
             <section class="settings-section">
               <p class="section-label">Location</p>
-              <label class="select-row">
-                <span id="locationSummary">Tokyo, Japan</span>
-                <select id="locationPreset" aria-label="Location">
-                  <option value="tokyo" selected>Tokyo</option>
-                  <option value="yokohama">Yokohama</option>
-                  <option value="osaka">Osaka</option>
-                  <option value="sapporo">Sapporo</option>
-                  <option value="fukuoka">Fukuoka</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </label>
-              <div class="location-grid custom-location" id="customLocation" hidden>
-                <label><span>Latitude</span><input id="latitude" type="number" value="35.6355" step="0.0001" /></label>
-                <label><span>Longitude</span><input id="longitude" type="number" value="139.7407" step="0.0001" /></label>
+              <div class="choice-column location-options" role="radiogroup" aria-label="Location">
+                <label><input type="radio" name="locationPreset" value="tokyo" checked /> <span>Tokyo</span></label>
+                <label><input type="radio" name="locationPreset" value="osaka" /> <span>Osaka</span></label>
+                <label><input type="radio" name="locationPreset" value="sapporo" /> <span>Sapporo</span></label>
+                <label><input type="radio" name="locationPreset" value="fukuoka" /> <span>Fukuoka</span></label>
               </div>
               <input id="locationName" type="hidden" value="Tokyo, Japan" />
+              <input id="latitude" type="hidden" value="35.6355" />
+              <input id="longitude" type="hidden" value="139.7407" />
             </section>
 
             <section class="settings-section">
               <p class="section-label">Environment</p>
-              <div class="choice-row" role="radiogroup" aria-label="Environment mode">
+              <div class="choice-column" role="radiogroup" aria-label="Environment mode">
                 <label><input type="radio" name="environmentMode" value="automatic" checked /> <span>Automatic</span></label>
                 <label><input type="radio" name="environmentMode" value="simulation" /> <span>Simulation</span></label>
               </div>
-              <p class="mode-note" id="environmentModeNote">現在の時刻、天気、気温、潮汐を使用します。</p>
 
-              <div class="simulation-panel" id="simulationPanel" aria-disabled="true">
+              <div class="simulation-panel" id="simulationPanel" hidden>
                 <div class="simulation-group">
                   <p>Time</p>
-                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation time">
+                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation time">
                     <label><input type="radio" name="simulationTime" value="Morning" /> <span>Morning</span></label>
                     <label><input type="radio" name="simulationTime" value="Afternoon" checked /> <span>Afternoon</span></label>
                     <label><input type="radio" name="simulationTime" value="Evening" /> <span>Evening</span></label>
@@ -122,23 +106,22 @@
                 </div>
 
                 <div class="simulation-group">
-                  <p>Tide</p>
-                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation tide">
-                    <label><input type="radio" name="simulationTide" value="rising" /> <span>Rising Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="ebb" checked /> <span>Ebb Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="high" /> <span>High Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="low" /> <span>Low Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="slack" /> <span>Slack Tide</span></label>
-                  </div>
-                </div>
-
-                <div class="simulation-group">
                   <p>Weather</p>
-                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation weather">
+                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation weather">
                     <label><input type="radio" name="simulationWeather" value="晴れ" checked /> <span>Clear</span></label>
                     <label><input type="radio" name="simulationWeather" value="曇り" /> <span>Cloudy</span></label>
                     <label><input type="radio" name="simulationWeather" value="雨" /> <span>Rain</span></label>
                     <label><input type="radio" name="simulationWeather" value="嵐" /> <span>Storm</span></label>
+                  </div>
+                </div>
+
+                <div class="simulation-group">
+                  <p>Tide</p>
+                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation tide">
+                    <label><input type="radio" name="simulationTide" value="high" /> <span>High Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="low" /> <span>Low Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="rising" /> <span>Rising Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="ebb" checked /> <span>Ebb Tide</span></label>
                   </div>
                 </div>
 

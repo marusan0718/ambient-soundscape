@@ -33,46 +33,22 @@ const BASE_MASTER_DB = -14;
 const BASE_SOURCE_VOLUMES = Object.fromEntries(APP_SOUND_SOURCES.map((source) => [source.id, source.volume]));
 const LOCATION_PRESETS = {
   tokyo: { name: "Tokyo, Japan", latitude: 35.6355, longitude: 139.7407 },
-  yokohama: { name: "Yokohama, Japan", latitude: 35.4437, longitude: 139.638 },
   osaka: { name: "Osaka, Japan", latitude: 34.6937, longitude: 135.5023 },
   sapporo: { name: "Sapporo, Japan", latitude: 43.0618, longitude: 141.3545 },
   fukuoka: { name: "Fukuoka, Japan", latitude: 33.5902, longitude: 130.4017 }
 };
-const ELEMENT_LABELS = {
-  analogPad: "水面",
-  dreamPad: "余韻",
-  ambientPiano: "流れ",
-  glassBell: "光",
-  glockenspiel: "きらめき",
-  marimba: "粒",
-  woodBlock: "波紋",
-  crystalAccent: "結晶",
-  brushedMetal: "風"
+const SOUND_GROUPS = {
+  afterglow: { id: "sound-afterglow", sources: ["dreamPad"] },
+  flow: { id: "sound-flow", sources: ["ambientPiano", "glassBell"] },
+  sparkle: { id: "sound-sparkle", sources: ["glockenspiel", "crystalAccent"] },
+  particle: { id: "sound-particle", sources: ["marimba", "woodBlock"] },
+  fluctuation: { id: "sound-fluctuation", sources: ["analogPad", "brushedMetal"] }
 };
-const ELEMENT_IDS = {
-  analogPad: "sound-surface",
-  dreamPad: "sound-afterglow",
-  ambientPiano: "sound-flow",
-  glassBell: "sound-light",
-  glockenspiel: "sound-sparkle",
-  marimba: "sound-particle",
-  woodBlock: "sound-ripple",
-  crystalAccent: "sound-crystal",
-  brushedMetal: "sound-air"
-};
-const SOURCE_ACTIVITY_WINDOWS = {
-  analogPad: 170000,
-  dreamPad: 155000,
-  ambientPiano: 125000,
-  glassBell: 120000,
-  glockenspiel: 105000,
-  marimba: 95000,
-  woodBlock: 90000,
-  crystalAccent: 82000,
-  brushedMetal: 88000
-};
-const activeElements = new Map();
-const ELEMENT_ORDER = ["analogPad", "dreamPad", "ambientPiano", "glassBell", "glockenspiel", "marimba", "woodBlock", "crystalAccent", "brushedMetal"];
+const SOURCE_TO_GROUP = Object.fromEntries(
+  Object.entries(SOUND_GROUPS).flatMap(([group, spec]) => spec.sources.map((source) => [source, group]))
+);
+const activeSources = new Set();
+const activeGroups = new Set();
 let lastEnvTextUpdate = 0;
 
 APP_SOUND_SOURCES.forEach((source) => {
@@ -152,15 +128,11 @@ function getCheckedValue(name) {
 function setSimulationEnabled(enabled) {
   const panel = $("#simulationPanel");
   if (!panel) return;
-  panel.classList.toggle("is-disabled", !enabled);
+  panel.hidden = !enabled;
   panel.setAttribute("aria-disabled", String(!enabled));
   panel.querySelectorAll("input").forEach((input) => {
     input.disabled = !enabled;
   });
-  setTextIfChanged(
-    $("#environmentModeNote"),
-    enabled ? "選択した環境条件を使って音を生成します。" : "現在の時刻、天気、気温、潮汐を使用します。"
-  );
 }
 
 function updateLocationUi() {
@@ -174,20 +146,10 @@ function updateLocationUi() {
 }
 
 function applyLocationPreset(value) {
-  const custom = value === "custom";
-  $("#customLocation").hidden = !custom;
-  if (!custom && LOCATION_PRESETS[value]) {
-    appState.location = { ...LOCATION_PRESETS[value] };
-    updateLocationUi();
-    updateWeather();
-    return;
-  }
-  appState.location = {
-    name: "Custom",
-    latitude: Number($("#latitude").value),
-    longitude: Number($("#longitude").value)
-  };
+  if (!LOCATION_PRESETS[value]) return;
+  appState.location = { ...LOCATION_PRESETS[value] };
   updateLocationUi();
+  updateWeather();
 }
 
 function updateSimulationState() {
@@ -239,16 +201,20 @@ function createSimulationTide() {
 }
 
 function renderActiveElements() {
-  const now = Date.now();
-  ELEMENT_ORDER.forEach((id) => {
-    const el = document.getElementById(ELEMENT_IDS[id]);
+  Object.entries(SOUND_GROUPS).forEach(([group, spec]) => {
+    const el = document.getElementById(spec.id);
     if (!el) return;
-    const active = (activeElements.get(id) || 0) > now;
-    if (el.dataset.active === String(active)) return;
-    el.dataset.active = String(active);
-    setTextIfChanged(el, `${active ? "●" : "○"} ${ELEMENT_LABELS[id]}`);
-    el.style.color = active ? "rgba(95, 160, 220, 0.72)" : "rgba(31, 41, 55, 0.28)";
+    const active = activeGroups.has(group);
+    if (el.classList.contains("active") !== active) {
+      el.classList.toggle("active", active);
+    }
   });
+}
+
+function clearActiveElements() {
+  activeSources.clear();
+  activeGroups.clear();
+  renderActiveElements();
 }
 
 function updateEnvValue(id, nextText) {
@@ -263,10 +229,6 @@ function updateEnvironmentText(environment, tide, force = false) {
   setTextIfChanged($("#timeBand"), environment.timeBand);
   setTextIfChanged($("#weather"), environment.weather.weather);
   updateEnvValue("tideLevel", `${tide.tideLevel}cm`);
-  updateEnvValue("currentSpeed", `${tide.currentSpeed}kt`);
-  updateEnvValue("tideDirection", tide.direction);
-  updateEnvValue("highTideEta", formatMinutes(tide.minutesToHighTide));
-  updateEnvValue("lowTideEta", formatMinutes(tide.minutesToLowTide));
   updateEnvValue("temperature", `${environment.weather.temperature}℃`);
   updateEnvValue("humidity", `${environment.weather.humidity}%`);
   updateEnvValue("windSpeed", `${Number(environment.weather.windSpeed || 0).toFixed(1)}m/s`);
@@ -302,6 +264,7 @@ function bindControls() {
     if (appState.isPlaying) {
       audioEngine.stop();
       appState.isPlaying = false;
+      clearActiveElements();
       updatePlaybackUi();
       return;
     }
@@ -320,6 +283,7 @@ function bindControls() {
   $("#stopButton").addEventListener("click", () => {
     audioEngine.stop();
     appState.isPlaying = false;
+    clearActiveElements();
     updatePlaybackUi();
   });
 
@@ -365,17 +329,8 @@ function bindControls() {
   $("#refreshWeather").addEventListener("click", updateWeather);
   $("#resetSettings").addEventListener("click", resetSettings);
 
-  $("#locationPreset").addEventListener("change", (event) => applyLocationPreset(event.target.value));
-  ["latitude", "longitude"].forEach((id) => {
-    $(`#${id}`).addEventListener("change", () => {
-      appState.location = {
-        name: "Custom",
-        latitude: Number($("#latitude").value),
-        longitude: Number($("#longitude").value)
-      };
-      updateLocationUi();
-      updateWeather();
-    });
+  document.querySelectorAll('input[name="locationPreset"]').forEach((input) => {
+    input.addEventListener("change", (event) => applyLocationPreset(event.target.value));
   });
 
   document.querySelectorAll('input[name="environmentMode"], input[name="simulationTime"], input[name="simulationTide"], input[name="simulationWeather"]').forEach((input) => {
@@ -405,10 +360,17 @@ function bindControls() {
 
   window.addEventListener("source-activity", (event) => {
     const { id, active } = event.detail;
+    const group = SOURCE_TO_GROUP[id];
+    if (!group) return;
     if (active) {
-      activeElements.set(id, Date.now() + (SOURCE_ACTIVITY_WINDOWS[id] || 18000));
-      renderActiveElements();
+      activeSources.add(id);
+    } else {
+      activeSources.delete(id);
     }
+    const groupActive = SOUND_GROUPS[group].sources.some((source) => activeSources.has(source));
+    if (groupActive) activeGroups.add(group);
+    else activeGroups.delete(group);
+    renderActiveElements();
   });
 }
 
