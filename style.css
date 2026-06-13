@@ -271,7 +271,26 @@ body.is-playing .ring-copy span {
   color: rgba(31, 41, 55, 0.34);
   opacity: 0.36;
   backdrop-filter: blur(8px);
+  font-size: 0;
+  line-height: 1;
   transition: color 180ms ease, background 180ms ease, opacity 180ms ease;
+}
+
+.advanced-button::before {
+  content: "•••";
+  display: block;
+  color: currentColor;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.advanced-button[aria-expanded="true"]::before {
+  content: "×";
+  font-size: 15px;
+  letter-spacing: 0;
+  transform: translateY(-0.5px);
 }
 
 .advanced-button:hover {
@@ -307,22 +326,56 @@ body.is-playing .ring-copy span {
 }
 
 .advanced-settings {
+  width: min(460px, 84vw);
   margin-top: 42px;
+  margin-inline: auto;
   padding-top: 24px;
   border-top: 1px solid rgba(31, 41, 55, 0.08);
+  gap: 22px;
 }
 
 .advanced-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
 }
 
 .advanced-top p {
   margin: 0;
   color: rgba(31, 41, 55, 0.46);
   font-size: 0.78rem;
+}
+
+.advanced-settings .range-row,
+.advanced-settings .toggle-row {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.advanced-settings .range-row {
+  gap: 9px;
+  font-size: 0.88rem;
+}
+
+.advanced-settings .range-row span {
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.advanced-settings .range-row b {
+  min-width: 4.8em;
+  text-align: right;
+}
+
+.advanced-settings .toggle-row {
+  justify-content: center;
+  gap: 14px;
+  color: rgba(107, 114, 128, 0.78);
+  font-size: 0.82rem;
+}
+
+.advanced-settings .text-button {
+  justify-self: center;
 }
 
 .primary-volume {
