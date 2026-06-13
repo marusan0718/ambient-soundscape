@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Generative Ambient Tides</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <button id="btnFullscreen" class="fullscreen-btn" type="button" aria-label="Enter fullscreen">⛶</button>
+    <main class="app-shell">
+      <section class="screen is-active home-screen" id="homeScreen" data-screen="home">
+        <div class="home-stage">
+          <button class="art-ring home-ring" id="playButton" type="button" aria-label="Tap to begin">
+            <svg class="ring-svg" viewBox="0 0 420 420" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGradientHome" x1="54" y1="64" x2="356" y2="356" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+                  <stop offset="24%" stop-color="#cde5fa" stop-opacity="0.95" />
+                  <stop offset="48%" stop-color="#ffffff" stop-opacity="0.95" />
+                  <stop offset="72%" stop-color="#e8daae" stop-opacity="0.55" />
+                  <stop offset="100%" stop-color="#a8d2f6" stop-opacity="0.9" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="210" cy="210" r="178" pathLength="1" />
+            </svg>
+            <span class="ring-copy" translate="no">
+              <b id="playbackStatus" class="notranslate" translate="no" data-label="Tap to begin"></b>
+              <span id="homeTimeBand" class="notranslate" translate="no">--</span>
+            </span>
+          </button>
+          <button class="hidden-stop" id="stopButton" type="button" aria-hidden="true" tabindex="-1">停止</button>
+
+          <div class="home-readout">
+            <section class="active-elements" id="activeElements" aria-label="音の構成要素">
+              <span id="sound-surface" data-source="analogPad" data-label="水面">○ 水面</span>
+              <span id="sound-afterglow" data-source="dreamPad" data-label="余韻">○ 余韻</span>
+              <span id="sound-flow" data-source="ambientPiano" data-label="流れ">○ 流れ</span>
+              <span id="sound-light" data-source="glassBell" data-label="光">○ 光</span>
+              <span id="sound-sparkle" data-source="glockenspiel" data-label="きらめき">○ きらめき</span>
+              <span id="sound-particle" data-source="marimba" data-label="粒">○ 粒</span>
+              <span id="sound-ripple" data-source="woodBlock" data-label="波紋">○ 波紋</span>
+              <span id="sound-crystal" data-source="crystalAccent" data-label="結晶">○ 結晶</span>
+              <span id="sound-air" data-source="brushedMetal" data-label="風">○ 風</span>
+            </section>
+
+            <section class="environment-line" aria-label="current conditions">
+              <span id="temperature"><em>気温</em> <strong>--℃</strong></span>
+              <span id="humidity"><em>湿度</em> <strong>--%</strong></span>
+              <span id="windSpeed"><em>風速</em> <strong>--m/s</strong></span>
+              <span id="tideLevel"><em>潮位</em> <strong>--cm</strong></span>
+              <span id="currentSpeed"><em>潮流</em> <strong>--kt</strong></span>
+              <span id="tideDirection"><em>潮</em> <strong>--</strong></span>
+              <span id="highTideEta"><em>満潮まで</em> <strong>--</strong></span>
+              <span id="lowTideEta"><em>干潮まで</em> <strong>--</strong></span>
+            </section>
+          </div>
+        </div>
+
+        <span class="visually-hidden" id="timeBand">--</span>
+        <span class="visually-hidden" id="weather">--</span>
+        <span class="visually-hidden" id="compositionName">--</span>
+        <span class="visually-hidden" id="scaleName">--</span>
+        <span class="visually-hidden" id="rhythmName">--</span>
+        <span class="visually-hidden" id="tideStillMode">潮止まりモード: OFF</span>
+      </section>
+
+      <section class="screen settings-screen" id="settingsScreen" data-screen="settings">
+        <section class="settings-panel">
+          <div class="settings-top">
+            <p>Settings</p>
+            <button class="advanced-button" id="detailsToggle" type="button" aria-expanded="false" aria-label="Advanced settings">•••</button>
+          </div>
+
+          <div class="settings-sections">
+            <section class="settings-section">
+              <p class="section-label">Sound</p>
+              <label class="range-row primary-volume">
+                <span>Volume <b id="masterVolumeValue">100%</b></span>
+                <input id="masterVolume" type="range" min="0" max="100" value="100" step="1" />
+              </label>
+            </section>
+
+            <section class="settings-section">
+              <p class="section-label">Location</p>
+              <label class="select-row">
+                <span id="locationSummary">Tokyo, Japan</span>
+                <select id="locationPreset" aria-label="Location">
+                  <option value="tokyo" selected>Tokyo</option>
+                  <option value="yokohama">Yokohama</option>
+                  <option value="osaka">Osaka</option>
+                  <option value="sapporo">Sapporo</option>
+                  <option value="fukuoka">Fukuoka</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              <div class="location-grid custom-location" id="customLocation" hidden>
+                <label><span>Latitude</span><input id="latitude" type="number" value="35.6355" step="0.0001" /></label>
+                <label><span>Longitude</span><input id="longitude" type="number" value="139.7407" step="0.0001" /></label>
+              </div>
+              <input id="locationName" type="hidden" value="Tokyo, Japan" />
+            </section>
+
+            <section class="settings-section">
+              <p class="section-label">Environment</p>
+              <div class="choice-row" role="radiogroup" aria-label="Environment mode">
+                <label><input type="radio" name="environmentMode" value="automatic" checked /> <span>Automatic</span></label>
+                <label><input type="radio" name="environmentMode" value="simulation" /> <span>Simulation</span></label>
+              </div>
+              <p class="mode-note" id="environmentModeNote">現在の時刻、天気、気温、潮汐を使用します。</p>
+
+              <div class="simulation-panel" id="simulationPanel" aria-disabled="true">
+                <div class="simulation-group">
+                  <p>Time</p>
+                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation time">
+                    <label><input type="radio" name="simulationTime" value="Morning" /> <span>Morning</span></label>
+                    <label><input type="radio" name="simulationTime" value="Afternoon" checked /> <span>Afternoon</span></label>
+                    <label><input type="radio" name="simulationTime" value="Evening" /> <span>Evening</span></label>
+                    <label><input type="radio" name="simulationTime" value="Night" /> <span>Night</span></label>
+                  </div>
+                </div>
+
+                <div class="simulation-group">
+                  <p>Tide</p>
+                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation tide">
+                    <label><input type="radio" name="simulationTide" value="rising" /> <span>Rising Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="ebb" checked /> <span>Ebb Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="high" /> <span>High Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="low" /> <span>Low Tide</span></label>
+                    <label><input type="radio" name="simulationTide" value="slack" /> <span>Slack Tide</span></label>
+                  </div>
+                </div>
+
+                <div class="simulation-group">
+                  <p>Weather</p>
+                  <div class="choice-row compact" role="radiogroup" aria-label="Simulation weather">
+                    <label><input type="radio" name="simulationWeather" value="晴れ" checked /> <span>Clear</span></label>
+                    <label><input type="radio" name="simulationWeather" value="曇り" /> <span>Cloudy</span></label>
+                    <label><input type="radio" name="simulationWeather" value="雨" /> <span>Rain</span></label>
+                    <label><input type="radio" name="simulationWeather" value="嵐" /> <span>Storm</span></label>
+                  </div>
+                </div>
+
+                <label class="range-row">
+                  <span>Temperature <b id="simulationTemperatureValue">27℃</b></span>
+                  <input id="simulationTemperature" type="range" min="-5" max="38" value="27" step="1" />
+                </label>
+              </div>
+            </section>
+          </div>
+
+          <div class="advanced-settings" id="advancedSettings" hidden>
+            <div class="advanced-top">
+              <p>Advanced</p>
+              <button class="text-button" id="resetSettings" type="button">100%に戻す</button>
+            </div>
+            <div class="primary-settings" id="volumeSettings"></div>
+            <div class="advanced-volume" id="advancedVolumeSettings"></div>
+            <label class="range-row">
+              <span>Reverb <b id="reverbValue">42%</b></span>
+              <input id="reverbAmount" type="range" min="0" max="1" value="0.42" step="0.01" />
+            </label>
+            <label class="range-row">
+              <span>Lowpass <b id="lowpassValue">5200Hz</b></span>
+              <input id="lowpass" type="range" min="900" max="8500" value="5200" step="50" />
+            </label>
+            <label class="range-row">
+              <span>Tremolo <b id="tremoloValue">12%</b></span>
+              <input id="tremoloAmount" type="range" min="0" max="0.8" value="0.12" step="0.01" />
+            </label>
+            <label class="toggle-row">
+              <span>Demo Tide</span>
+              <input id="demoTideMode" type="checkbox" checked />
+            </label>
+            <button class="text-button" id="refreshWeather" type="button">天気を更新</button>
+            <p class="weather-note" id="weatherNote">Open-Meteo から取得します。</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="画面切り替え">
+      <button class="tab-button is-active" type="button" data-target="home">Home</button>
+      <button class="tab-button" type="button" data-target="settings">Settings</button>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <script src="./tideProvider.js"></script>
+    <script src="./weatherProvider.js"></script>
+    <script src="./audioEngine.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
