@@ -49,7 +49,10 @@ const SOURCE_TO_GROUP = Object.fromEntries(
 );
 const activeSources = new Set();
 const activeGroups = new Set();
+const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 let lastEnvTextUpdate = 0;
+let lastWeatherFetchAt = 0;
+let weatherUpdateInFlight = false;
 
 APP_SOUND_SOURCES.forEach((source) => {
   appState.sourcePercents[source.id] = 100;
@@ -149,7 +152,7 @@ function applyLocationPreset(value) {
   if (!LOCATION_PRESETS[value]) return;
   appState.location = { ...LOCATION_PRESETS[value] };
   updateLocationUi();
-  updateWeather();
+  updateWeather({ force: true });
 }
 
 function updateSimulationState() {
@@ -163,7 +166,11 @@ function updateSimulationState() {
   setTextIfChanged($("#simulationTemperatureValue"), `${appState.simulation.temperature}℃`);
   setSimulationEnabled(appState.environmentMode === "simulation");
   lastEnvTextUpdate = 0;
-  tick();
+  if (appState.environmentMode === "automatic") {
+    updateWeather({ force: true });
+  } else {
+    tick();
+  }
 }
 
 function createSimulationWeather() {
@@ -326,7 +333,7 @@ function bindControls() {
     audioEngine.setTremoloAmount(event.target.value);
   });
   $("#demoTideMode").addEventListener("change", (event) => tideProvider.setDemoMode(event.target.checked));
-  $("#refreshWeather").addEventListener("click", updateWeather);
+  $("#refreshWeather").addEventListener("click", () => updateWeather({ force: true }));
   $("#resetSettings").addEventListener("click", resetSettings);
 
   document.querySelectorAll('input[name="locationPreset"]').forEach((input) => {
@@ -397,7 +404,16 @@ function resetSettings() {
   applyAllSourceVolumes();
 }
 
-async function updateWeather() {
+async function updateWeather({ force = false } = {}) {
+  if (appState.environmentMode !== "automatic") {
+    tick();
+    return;
+  }
+  const now = Date.now();
+  if (weatherUpdateInFlight || (!force && now - lastWeatherFetchAt < WEATHER_REFRESH_MS)) {
+    return;
+  }
+  weatherUpdateInFlight = true;
   const note = $("#weatherNote");
   note.textContent = "天気を取得中...";
   try {
@@ -406,7 +422,11 @@ async function updateWeather() {
   } catch (error) {
     appState.weather = appFallbackWeather();
     note.textContent = "取得できなかったため、デモ天気に切り替えました。";
+  } finally {
+    lastWeatherFetchAt = Date.now();
+    weatherUpdateInFlight = false;
   }
+  lastEnvTextUpdate = 0;
   tick();
 }
 
@@ -448,8 +468,12 @@ resetSettings();
 updatePlaybackUi();
 updateLocationUi();
 updateSimulationState();
-updateWeather().then(() => {
+updateWeather({ force: true }).then(() => {
   lastEnvTextUpdate = 0;
   tick();
+});
+setInterval(() => updateWeather(), WEATHER_REFRESH_MS);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) updateWeather();
 });
 setInterval(tick, 3000);
