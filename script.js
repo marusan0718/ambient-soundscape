@@ -49,7 +49,7 @@ const SOURCE_TO_GROUP = Object.fromEntries(
 );
 const activeSources = new Set();
 const activeGroups = new Set();
-const WEATHER_REFRESH_MS = 10 * 60 * 1000;
+const WEATHER_REFRESH_MS = 60 * 1000;
 let lastEnvTextUpdate = 0;
 let lastWeatherFetchAt = 0;
 let weatherUpdateInFlight = false;
