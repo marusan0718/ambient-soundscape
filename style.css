@@ -572,6 +572,187 @@ input[type="radio"]:focus-visible {
   white-space: nowrap;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --card: #151922;
+    --line: rgba(210, 224, 240, 0.12);
+    --accent: #8fbfe8;
+    --text: #e7edf5;
+    --muted: #9aa6b6;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 50% 34%, rgba(143, 191, 232, 0.11), transparent 42%),
+      radial-gradient(circle at 50% 82%, rgba(232, 218, 174, 0.06), transparent 36%),
+      var(--bg);
+  }
+
+  .ring-svg {
+    filter:
+      drop-shadow(0 8px 24px rgba(191, 220, 255, 0.08))
+      drop-shadow(0 22px 56px rgba(112, 167, 220, 0.16));
+  }
+
+  .ring-track {
+    opacity: 0.7;
+    filter: saturate(1.08);
+  }
+
+  body.is-playing .ring-track {
+    opacity: 0.98;
+  }
+
+  .ring-copy b {
+    color: rgba(232, 238, 247, 0.78);
+  }
+
+  .ring-copy span {
+    color: rgba(215, 224, 238, 0.66);
+  }
+
+  .active-elements {
+    color: rgba(225, 233, 244, 0.58);
+  }
+
+  .active-elements span {
+    color: rgba(225, 233, 244, 0.34);
+  }
+
+  .sound-token::before {
+    color: rgba(225, 233, 244, 0.26);
+  }
+
+  .sound-token.active,
+  .sound-token.active::before {
+    color: rgba(143, 191, 232, 0.86);
+  }
+
+  .environment-line {
+    color: rgba(225, 233, 244, 0.48);
+  }
+
+  .environment-line span + span::before {
+    color: rgba(225, 233, 244, 0.24);
+  }
+
+  .environment-line em {
+    color: rgba(225, 233, 244, 0.34);
+  }
+
+  .environment-line strong {
+    color: rgba(238, 244, 252, 0.68);
+  }
+
+  .settings-top p,
+  .section-label,
+  .simulation-group p {
+    color: rgba(232, 238, 247, 0.74);
+  }
+
+  .advanced-top p {
+    color: rgba(225, 233, 244, 0.48);
+  }
+
+  .range-row,
+  .toggle-row,
+  .choice-column {
+    color: rgba(232, 238, 247, 0.76);
+  }
+
+  .range-row b {
+    color: rgba(205, 216, 230, 0.72);
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(90deg, rgba(143, 191, 232, 0.66), rgba(255, 255, 255, 0.18));
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    border-color: rgba(245, 249, 255, 0.5);
+    background: rgba(143, 191, 232, 0.92);
+    box-shadow: 0 2px 14px rgba(143, 191, 232, 0.2);
+  }
+
+  input[type="range"]::-moz-range-track {
+    background: linear-gradient(90deg, rgba(143, 191, 232, 0.66), rgba(255, 255, 255, 0.18));
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    border-color: rgba(245, 249, 255, 0.5);
+    background: rgba(143, 191, 232, 0.92);
+  }
+
+  .choice-column input,
+  .toggle-row input {
+    accent-color: var(--accent);
+  }
+
+  .text-button,
+  .details-toggle {
+    color: rgba(205, 216, 230, 0.66);
+  }
+
+  .location-grid label,
+  .weather-note {
+    color: rgba(205, 216, 230, 0.58);
+  }
+
+  .location-grid input {
+    border-color: rgba(210, 224, 240, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+  }
+
+  .advanced-settings {
+    border-top-color: rgba(210, 224, 240, 0.1);
+  }
+
+  .advanced-button {
+    border-color: rgba(210, 224, 240, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(225, 233, 244, 0.32);
+  }
+
+  .advanced-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(225, 233, 244, 0.62);
+  }
+
+  .tabbar {
+    border-color: rgba(210, 224, 240, 0.12);
+    background: rgba(18, 22, 30, 0.64);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  .tab-button {
+    color: rgba(205, 216, 230, 0.58);
+  }
+
+  .tab-button.is-active {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(238, 244, 252, 0.86);
+  }
+
+  .fullscreen-btn {
+    border-color: rgba(210, 224, 240, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(225, 233, 244, 0.28);
+  }
+
+  .fullscreen-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(225, 233, 244, 0.56);
+  }
+
+  button:focus-visible,
+  input:focus-visible {
+    outline-color: rgba(143, 191, 232, 0.45);
+  }
+}
+
 @media (max-width: 980px) {
   .home-stage {
     gap: 34px;
