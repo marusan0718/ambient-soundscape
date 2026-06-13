@@ -8,7 +8,7 @@ const audioEngine = new AppAudioEngine();
 const appState = {
   weather: appFallbackWeather(),
   location: {
-    name: "Tokyo, Japan",
+    name: "Takanawa Gateway Station",
     latitude: 35.6355,
     longitude: 139.7407
   },
@@ -31,12 +31,6 @@ const advancedVolumeSettings = $("#advancedVolumeSettings");
 const btnFullscreen = $("#btnFullscreen");
 const BASE_MASTER_DB = -14;
 const BASE_SOURCE_VOLUMES = Object.fromEntries(APP_SOUND_SOURCES.map((source) => [source.id, source.volume]));
-const LOCATION_PRESETS = {
-  tokyo: { name: "Tokyo, Japan", latitude: 35.6355, longitude: 139.7407 },
-  osaka: { name: "Osaka, Japan", latitude: 34.6937, longitude: 135.5023 },
-  sapporo: { name: "Sapporo, Japan", latitude: 43.0618, longitude: 141.3545 },
-  fukuoka: { name: "Fukuoka, Japan", latitude: 33.5902, longitude: 130.4017 }
-};
 const SOUND_GROUPS = {
   afterglow: { id: "sound-afterglow", sources: ["dreamPad"] },
   flow: { id: "sound-flow", sources: ["ambientPiano", "glassBell"] },
@@ -136,23 +130,6 @@ function setSimulationEnabled(enabled) {
   panel.querySelectorAll("input").forEach((input) => {
     input.disabled = !enabled;
   });
-}
-
-function updateLocationUi() {
-  setTextIfChanged($("#locationSummary"), appState.location.name);
-  const locationName = $("#locationName");
-  if (locationName) locationName.value = appState.location.name;
-  const latitude = $("#latitude");
-  const longitude = $("#longitude");
-  if (latitude) latitude.value = appState.location.latitude;
-  if (longitude) longitude.value = appState.location.longitude;
-}
-
-function applyLocationPreset(value) {
-  if (!LOCATION_PRESETS[value]) return;
-  appState.location = { ...LOCATION_PRESETS[value] };
-  updateLocationUi();
-  updateWeather({ force: true });
 }
 
 function updateSimulationState() {
@@ -336,10 +313,6 @@ function bindControls() {
   $("#refreshWeather").addEventListener("click", () => updateWeather({ force: true }));
   $("#resetSettings").addEventListener("click", resetSettings);
 
-  document.querySelectorAll('input[name="locationPreset"]').forEach((input) => {
-    input.addEventListener("change", (event) => applyLocationPreset(event.target.value));
-  });
-
   document.querySelectorAll('input[name="environmentMode"], input[name="simulationTime"], input[name="simulationTide"], input[name="simulationWeather"]').forEach((input) => {
     input.addEventListener("change", updateSimulationState);
   });
@@ -466,7 +439,6 @@ renderSettings();
 bindControls();
 resetSettings();
 updatePlaybackUi();
-updateLocationUi();
 updateSimulationState();
 updateWeather({ force: true }).then(() => {
   lastEnvTextUpdate = 0;
