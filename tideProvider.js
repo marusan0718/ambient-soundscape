@@ -1,103 +1,52 @@
-const TWO_PI = Math.PI * 2;
-const TIDE_PERIOD_MINUTES = 12 * 60 + 25;
-const BASE_HIGH = 172;
-const BASE_LOW = 48;
-
-function startOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function minutesBetween(a, b) {
-  return Math.round((a.getTime() - b.getTime()) / 60000);
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function nextEvent(now, phaseMinutes, targetPhase) {
-  const day = startOfDay(now);
-  const base = day.getTime() + (targetPhase - phaseMinutes) * 60000;
-  let nearest = new Date(base);
-
-  while (nearest.getTime() - now.getTime() < -TIDE_PERIOD_MINUTES * 30000) {
-    nearest = new Date(nearest.getTime() + TIDE_PERIOD_MINUTES * 60000);
-  }
-  while (nearest.getTime() - now.getTime() > TIDE_PERIOD_MINUTES * 30000) {
-    nearest = new Date(nearest.getTime() - TIDE_PERIOD_MINUTES * 60000);
-  }
-  if (nearest < now) {
-    nearest = new Date(nearest.getTime() + TIDE_PERIOD_MINUTES * 60000);
-  }
-  return nearest;
-}
-
-function closestEvent(now, phaseMinutes, targetPhase) {
-  const day = startOfDay(now);
-  const base = day.getTime() + (targetPhase - phaseMinutes) * 60000;
-  const candidates = [-2, -1, 0, 1, 2].map((step) => new Date(base + step * TIDE_PERIOD_MINUTES * 60000));
-  return candidates.reduce((best, candidate) => {
-    const absMinutes = Math.abs(minutesBetween(candidate, now));
-    if (!best || absMinutes < best.absMinutes) {
-      return { time: candidate, absMinutes, signedMinutes: minutesBetween(candidate, now) };
-    }
-    return best;
-  }, null);
-}
+const TIDE_LATITUDE = 35.62;
+const TIDE_LONGITUDE = 139.77;
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 class DemoTideProvider {
   constructor() {
-    this.enabled = true;
+    this.enabled = false;
+    this.cache = null;
+    this.lastFetch = 0;
+    this.refresh();
+    setInterval(() => this.refresh(), 10 * 60 * 1000);
   }
-
-  setDemoMode(enabled) {
-    this.enabled = enabled;
+  setDemoMode(enabled) { this.enabled = enabled; }
+  async refresh() {
+    try {
+      const params = new URLSearchParams({
+        latitude: TIDE_LATITUDE, longitude: TIDE_LONGITUDE,
+        hourly: "sea_level_height_msl", timezone: "Asia/Tokyo",
+        past_days: "1", forecast_days: "2", cell_selection: "sea"
+      });
+      const response = await fetch("https://marine-api.open-meteo.com/v1/marine?" + params);
+      if (!response.ok) throw new Error("Tide request failed");
+      const data = await response.json();
+      this.cache = data.hourly;
+      this.lastFetch = Date.now();
+    } catch (e) { console.warn("Tide API fallback", e); }
   }
-
   getCurrentTide(now = new Date()) {
-    const day = startOfDay(now);
-    const minutes = minutesBetween(now, day);
-    const phaseOffset = 118;
-    const phaseMinutes = (minutes + phaseOffset) % TIDE_PERIOD_MINUTES;
-    const angle = (phaseMinutes / TIDE_PERIOD_MINUTES) * TWO_PI;
-    const seasonalLift = Math.sin((day.getDate() / 29.5) * TWO_PI) * 12;
-    const tideLevel = Math.round(((Math.cos(angle) + 1) / 2) * (BASE_HIGH - BASE_LOW) + BASE_LOW + seasonalLift);
-    const speed = Math.abs(Math.sin(angle));
-    const currentSpeed = Number((0.08 + speed * 1.82).toFixed(2));
-    const direction = Math.sin(angle) < 0 ? "上潮" : "下潮";
-    const highTideTime = nextEvent(now, phaseMinutes, 0);
-    const lowTideTime = nextEvent(now, phaseMinutes, TIDE_PERIOD_MINUTES / 2);
-    const closestHigh = closestEvent(now, phaseMinutes, 0);
-    const closestLow = closestEvent(now, phaseMinutes, TIDE_PERIOD_MINUTES / 2);
-    const closest = closestHigh.absMinutes <= closestLow.absMinutes
-      ? { type: "満潮", ...closestHigh }
-      : { type: "干潮", ...closestLow };
-    const tideStill = closest.absMinutes <= 30;
-    let tideStillPhase = "none";
-
-    if (tideStill) {
-      if (closest.signedMinutes > 10) tideStillPhase = "before";
-      else if (closest.signedMinutes >= -10) tideStillPhase = "center";
-      else tideStillPhase = "after";
-    }
-
-    return {
-      demo: this.enabled,
-      tideLevel,
-      currentSpeed,
-      speedNorm: clamp(currentSpeed / 1.9, 0, 1),
-      direction,
-      highTideTime,
-      lowTideTime,
-      minutesToHighTide: minutesBetween(highTideTime, now),
-      minutesToLowTide: minutesBetween(lowTideTime, now),
-      tideStill,
-      tideStillPhase,
-      closestEvent: { type: closest.type, minutes: closest.absMinutes, signedMinutes: closest.signedMinutes }
-    };
+    if (!this.cache?.time?.length) return this.fallback(now);
+    const times=this.cache.time.map(t=>new Date(t).getTime()), values=this.cache.sea_level_height_msl;
+    let i=times.findIndex(t=>t>=now.getTime()); if(i<1)i=Math.max(1,times.length-1);
+    const frac=clamp((now.getTime()-times[i-1])/(times[i]-times[i-1]),0,1);
+    const metres=values[i-1]+(values[i]-values[i-1])*frac;
+    const slope=values[i]-values[i-1], direction=slope>=0?"上潮":"下潮";
+    const localDate=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Tokyo"}).format(now);
+    const day=values.filter((_,j)=>this.cache.time[j].startsWith(localDate));
+    const lo=Math.min(...day), hi=Math.max(...day), norm=clamp((metres-lo)/Math.max(.01,hi-lo),0,1);
+    const speedNorm=clamp(Math.abs(slope)/0.16,0,1);
+    const still=speedNorm<.12;
+    return {demo:false,tideLevel:Math.round((metres-lo)*100),currentSpeed:Number(Math.abs(slope).toFixed(2)),
+      speedNorm,direction,highTideTime:null,lowTideTime:null,minutesToHighTide:0,minutesToLowTide:0,
+      tideStill:still,tideStillPhase:still?"center":"none",closestEvent:{type:norm>.5?"満潮":"干潮",minutes:0,signedMinutes:0},
+      seaLevelHeight:metres,tideNorm:norm};
+  }
+  fallback(now) {
+    const x=(now.getTime()/1000/60)/(12*60+25)*Math.PI*2, n=(Math.cos(x)+1)/2, rising=Math.sin(x)<0;
+    return {demo:true,tideLevel:Math.round(n*124),currentSpeed:.4,speedNorm:.25,direction:rising?"上潮":"下潮",
+      highTideTime:null,lowTideTime:null,minutesToHighTide:0,minutesToLowTide:0,tideStill:false,tideStillPhase:"none",
+      closestEvent:{type:n>.5?"満潮":"干潮",minutes:0,signedMinutes:0},tideNorm:n};
   }
 }
-
 window.DemoTideProvider = DemoTideProvider;
