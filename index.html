@@ -1,164 +1,100 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Generative Ambient Tides</title>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link rel="stylesheet" href="./style.css?v=20260614-settings-polish" />
-  </head>
-  <body>
-    <button id="btnFullscreen" class="fullscreen-btn" type="button" aria-label="Enter fullscreen">⛶</button>
-    <main class="app-shell">
-      <section class="screen is-active home-screen" id="homeScreen" data-screen="home">
-        <div class="home-stage">
-          <button class="art-ring home-ring" id="playButton" type="button" aria-label="Tap to begin">
-            <svg class="ring-svg" viewBox="0 0 420 420" aria-hidden="true">
-              <defs>
-                <linearGradient id="ringGradientHome" x1="54" y1="64" x2="356" y2="356" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
-                  <stop offset="24%" stop-color="#cde5fa" stop-opacity="0.95" />
-                  <stop offset="48%" stop-color="#ffffff" stop-opacity="0.95" />
-                  <stop offset="72%" stop-color="#e8daae" stop-opacity="0.55" />
-                  <stop offset="100%" stop-color="#a8d2f6" stop-opacity="0.9" />
-                </linearGradient>
-              </defs>
-              <circle class="ring-track" cx="210" cy="210" r="178" pathLength="1" />
-            </svg>
-            <span class="ring-copy" translate="no">
-              <b id="playbackStatus" class="notranslate" translate="no" data-label="Tap to begin"></b>
-              <span id="homeTimeBand" class="notranslate" translate="no">--</span>
-            </span>
-          </button>
-          <button class="hidden-stop" id="stopButton" type="button" aria-hidden="true" tabindex="-1">停止</button>
-
-          <div class="home-readout">
-            <section class="active-elements" id="activeElements" aria-label="音の構成要素">
-              <span id="sound-afterglow" class="sound-token" data-label="余韻">余韻</span>
-              <span id="sound-flow" class="sound-token" data-label="流れ">流れ</span>
-              <span id="sound-sparkle" class="sound-token" data-label="きらめき">きらめき</span>
-              <span id="sound-particle" class="sound-token" data-label="粒">粒</span>
-              <span id="sound-fluctuation" class="sound-token" data-label="揺らぎ">揺らぎ</span>
-            </section>
-
-            <section class="environment-line" aria-label="current conditions">
-              <span id="temperature"><em>気温</em> <strong>--℃</strong></span>
-              <span id="humidity"><em>湿度</em> <strong>--%</strong></span>
-              <span id="windSpeed"><em>風速</em> <strong>--m/s</strong></span>
-              <span id="tideLevel"><em>潮位</em> <strong>--cm</strong></span>
-            </section>
-          </div>
-        </div>
-
-        <span class="visually-hidden" id="timeBand">--</span>
-        <span class="visually-hidden" id="weather">--</span>
-        <span class="visually-hidden" id="compositionName">--</span>
-        <span class="visually-hidden" id="scaleName">--</span>
-        <span class="visually-hidden" id="rhythmName">--</span>
-        <span class="visually-hidden" id="tideStillMode">潮止まりモード: OFF</span>
-      </section>
-
-      <section class="screen settings-screen" id="settingsScreen" data-screen="settings">
-        <section class="settings-panel">
-          <div class="settings-top">
-            <p>Settings</p>
-            <button class="advanced-button" id="detailsToggle" type="button" aria-expanded="false" aria-label="Advanced settings">•••</button>
-          </div>
-
-          <div class="settings-sections">
-            <section class="settings-section">
-              <p class="section-label">Volume</p>
-              <label class="range-row primary-volume">
-                <span><b id="masterVolumeValue">100%</b></span>
-                <input id="masterVolume" type="range" min="0" max="100" value="100" step="1" />
-              </label>
-            </section>
-
-            <section class="settings-section">
-              <p class="section-label">Environment</p>
-              <div class="choice-column" role="radiogroup" aria-label="Environment mode">
-                <label><input type="radio" name="environmentMode" value="automatic" checked /> <span>Automatic</span></label>
-                <label><input type="radio" name="environmentMode" value="simulation" /> <span>Simulation</span></label>
-              </div>
-
-              <div class="simulation-panel" id="simulationPanel" hidden>
-                <div class="simulation-group">
-                  <p>Time</p>
-                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation time">
-                    <label><input type="radio" name="simulationTime" value="Morning" /> <span>Morning</span></label>
-                    <label><input type="radio" name="simulationTime" value="Afternoon" checked /> <span>Afternoon</span></label>
-                    <label><input type="radio" name="simulationTime" value="Evening" /> <span>Evening</span></label>
-                    <label><input type="radio" name="simulationTime" value="Night" /> <span>Night</span></label>
-                  </div>
-                </div>
-
-                <div class="simulation-group">
-                  <p>Weather</p>
-                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation weather">
-                    <label><input type="radio" name="simulationWeather" value="晴れ" checked /> <span>Clear</span></label>
-                    <label><input type="radio" name="simulationWeather" value="曇り" /> <span>Cloudy</span></label>
-                    <label><input type="radio" name="simulationWeather" value="雨" /> <span>Rain</span></label>
-                    <label><input type="radio" name="simulationWeather" value="嵐" /> <span>Storm</span></label>
-                  </div>
-                </div>
-
-                <div class="simulation-group">
-                  <p>Tide</p>
-                  <div class="choice-column compact" role="radiogroup" aria-label="Simulation tide">
-                    <label><input type="radio" name="simulationTide" value="high" /> <span>High Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="low" /> <span>Low Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="rising" /> <span>Rising Tide</span></label>
-                    <label><input type="radio" name="simulationTide" value="ebb" checked /> <span>Ebb Tide</span></label>
-                  </div>
-                </div>
-
-                <label class="range-row">
-                  <span>Temperature <b id="simulationTemperatureValue">27℃</b></span>
-                  <input id="simulationTemperature" type="range" min="-5" max="38" value="27" step="1" />
-                </label>
-              </div>
-            </section>
-          </div>
-
-          <div class="advanced-settings" id="advancedSettings" hidden>
-            <div class="advanced-top">
-              <p>Advanced</p>
-              <button class="text-button" id="resetSettings" type="button">100%に戻す</button>
-            </div>
-            <div class="primary-settings" id="volumeSettings"></div>
-            <div class="advanced-volume" id="advancedVolumeSettings"></div>
-            <label class="range-row">
-              <span>Reverb <b id="reverbValue">42%</b></span>
-              <input id="reverbAmount" type="range" min="0" max="1" value="0.42" step="0.01" />
-            </label>
-            <label class="range-row">
-              <span>Lowpass <b id="lowpassValue">5200Hz</b></span>
-              <input id="lowpass" type="range" min="900" max="8500" value="5200" step="50" />
-            </label>
-            <label class="range-row">
-              <span>Tremolo <b id="tremoloValue">12%</b></span>
-              <input id="tremoloAmount" type="range" min="0" max="0.8" value="0.12" step="0.01" />
-            </label>
-            <label class="toggle-row">
-              <span>Demo Tide</span>
-              <input id="demoTideMode" type="checkbox" checked />
-            </label>
-            <button class="text-button" id="refreshWeather" type="button">天気を更新</button>
-            <p class="weather-note" id="weatherNote">Open-Meteo から取得します。</p>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <nav class="tabbar" aria-label="画面切り替え">
-      <button class="tab-button is-active" type="button" data-target="home">Home</button>
-      <button class="tab-button" type="button" data-target="settings">Settings</button>
-    </nav>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    <script src="./tideProvider.js"></script>
-    <script src="./weatherProvider.js"></script>
-    <script src="./audioEngine.js"></script>
-    <script src="./script.js?v=20260614-current-location"></script>
-  </body>
-</html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071116"><title>水景 — Tide Soundscape</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:radial-gradient(circle at 50% 15%,#173743 0,#09191f 35%,#03090c 100%);color:#eef7f7;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 15%,#7fd5dc10 50%,transparent 75%);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translateX(8%) translateY(3%)}}main{width:min(760px,100%);margin:auto;padding:48px 22px 38px}
+header{text-align:center;margin:7vh 0 42px}.eyebrow{font-size:11px;letter-spacing:.34em;opacity:.55}.title{font-family:serif;font-weight:400;font-size:clamp(54px,15vw,92px);letter-spacing:.18em;margin:10px 0 6px;padding-left:.18em}.sub{font-size:12px;letter-spacing:.22em;opacity:.55}
+.orb{width:min(70vw,360px);aspect-ratio:1;margin:0 auto 34px;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 45% 35%,#8be0e733,#2b8d9b22 45%,#07111600 70%);box-shadow:0 0 100px #50cad225}
+.orb:before,.orb:after{content:"";position:absolute;border-radius:50%;border:1px solid #b9f5f522;inset:10%;animation:pulse 8s ease-in-out infinite}.orb:after{inset:22%;animation-delay:-4s}@keyframes pulse{50%{transform:scale(1.08);opacity:.3}}
+.tide{text-align:center}.height{font:300 clamp(48px,13vw,74px)/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.06em}.unit{font-size:16px;opacity:.55;margin-left:6px}.state{margin-top:13px;font-size:13px;letter-spacing:.2em;opacity:.75}
+.card{border:1px solid #d9ffff18;background:#ffffff08;backdrop-filter:blur(20px);border-radius:22px;padding:20px;margin:18px 0}.row{display:flex;justify-content:space-between;gap:20px;align-items:center}.label{font-size:12px;opacity:.55}.value{font-size:13px}.track{height:3px;background:#ffffff13;border-radius:99px;margin:16px 0 6px;overflow:hidden}.fill{height:100%;width:50%;background:#d8ffffaa;transition:width 2s ease}
+button{width:100%;border:0;border-radius:18px;padding:18px 22px;font-size:15px;letter-spacing:.12em;background:#e8ffff;color:#061114;box-shadow:0 12px 45px #66dce733;cursor:pointer}button.playing{background:#ffffff10;color:#eff;border:1px solid #ffffff22}
+.controls{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-top:15px}input[type=range]{width:100%;accent-color:#dff}.vol{font:12px ui-monospace,monospace;opacity:.65;width:42px;text-align:right}
+.note{font-size:11px;line-height:1.8;opacity:.42;margin-top:18px;text-align:center}.status{font-size:11px;opacity:.45;text-align:center;margin:14px}.error{color:#ffd7c7}
+footer{text-align:center;font-size:10px;line-height:1.8;opacity:.32;margin-top:45px}a{color:inherit}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">GENERATIVE TIDE SOUNDSCAPE</div><h1 class="title">水景</h1><div class="sub">SUIKEI · TOKYO BAY</div></header>
+<section class="orb"><div class="tide"><div><span id="height" class="height">--</span><span class="unit">m</span></div><div id="state" class="state">潮を読んでいます</div></div></section>
+<div class="card">
+ <div class="row"><span class="label">TIDE LEVEL</span><span id="range" class="value">--</span></div><div class="track"><div id="fill" class="fill"></div></div>
+ <div class="row" style="margin-top:15px"><span class="label">MOTION</span><span id="motion" class="value">--</span></div>
+</div>
+<button id="play">音の景色をひらく</button>
+<div class="controls card"><input id="volume" type="range" min="0" max="100" value="82"><span id="volText" class="vol">82%</span></div>
+<div id="status" class="status">東京湾の潮位に同期します</div>
+<p class="note">iPhone / iPad はブラウザの仕様上、最初の再生に1回のタップが必要です。<br>再生後はWeb Audioで連続生成します。</p>
+<footer>潮位: Open-Meteo Marine API · 参考値（航海用途不可）<br>Sound generated in real time — no prerecorded music</footer>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const TIDE_URL='https://marine-api.open-meteo.com/v1/marine?latitude=35.62&longitude=139.77&hourly=sea_level_height_msl&timezone=Asia%2FTokyo&past_days=1&forecast_days=2&cell_selection=sea';
+let tide={height:0,norm:.5,slope:0,min:0,max:1},ctx,master,compressor,running=false,timers=[];
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t,rand=(a,b)=>a+Math.random()*(b-a);
+async function loadTide(){
+ try{
+  const r=await fetch(TIDE_URL,{cache:'no-store'}); if(!r.ok)throw Error('API '+r.status); const d=await r.json();
+  const ts=d.hourly.time.map(x=>new Date(x).getTime()), vs=d.hourly.sea_level_height_msl; const now=Date.now();
+  let i=ts.findIndex(t=>t>=now); if(i<1)i=Math.max(1,ts.length-1);
+  const t=clamp((now-ts[i-1])/(ts[i]-ts[i-1])); const h=lerp(vs[i-1],vs[i],t);
+  const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Tokyo'});
+  const day=vs.filter((_,j)=>d.hourly.time[j].startsWith(today)).filter(Number.isFinite);
+  const mn=Math.min(...day),mx=Math.max(...day), slope=vs[i]-vs[i-1];
+  tide={height:h,norm:clamp((h-mn)/Math.max(.01,mx-mn)),slope,min:mn,max:mx}; renderTide();
+ }catch(e){$('#status').textContent='潮位データを取得できません — 穏やかな標準モードで再生します';$('#status').classList.add('error')}
+}
+function renderTide(){
+ $('#height').textContent=tide.height.toFixed(2); $('#fill').style.width=(tide.norm*100).toFixed(0)+'%';
+ $('#range').textContent=tide.min.toFixed(2)+' — '+tide.max.toFixed(2)+' m';
+ const near=tide.norm>.88?'満潮へ':tide.norm<.12?'干潮へ':tide.slope>=0?'上げ潮':'下げ潮';
+ $('#state').textContent=near; $('#motion').textContent=tide.slope>=0?'RISING / 上げ':'FALLING / 下げ';
+}
+function gain(v){const g=ctx.createGain();g.gain.value=v;return g}
+function osc(type,f){const o=ctx.createOscillator();o.type=type;o.frequency.value=f;return o}
+function pan(){return ctx.createStereoPanner()}
+function makeVerb(sec=7,decay=3){const c=ctx.createConvolver(),len=ctx.sampleRate*sec,b=ctx.createBuffer(2,len,ctx.sampleRate);for(let ch=0;ch<2;ch++){let x=b.getChannelData(ch);for(let i=0;i<len;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay)}return c}
+function envelope(g,t,a,d,peak){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d)}
+function drone(){
+ const bus=gain(.10),lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=lerp(430,850,tide.norm);bus.connect(lp).connect(master);
+ [55,82.41,110].forEach((f,k)=>{const o=osc(k===1?'triangle':'sine',f);const g=gain(k===0?.7:.28);o.detune.value=rand(-5,5);o.connect(g).connect(bus);o.start()});
+ const lfo=osc('sine',rand(.018,.035)),lg=gain(.035);lfo.connect(lg).connect(bus.gain);lfo.start()
+}
+function pad(){
+ if(!running)return; const t=ctx.currentTime+.05, roots=[110,146.83,164.81,220,246.94], f=roots[Math.floor(Math.random()*roots.length)];
+ const g=gain(.0001),p=pan();p.pan.value=rand(-.65,.65);g.connect(p).connect(master);
+ [1,1.5,2,3].forEach((m,k)=>{const o=osc(k<2?'sine':'triangle',f*m);o.detune.value=rand(-9,9);o.connect(g);o.start(t);o.stop(t+18)});
+ envelope(g,t,4.5,11,lerp(.018,.05,tide.norm)); setTimeout(pad,rand(7000,15000)/lerp(.85,1.35,tide.norm))
+}
+const scale=[0,2,7,9,14,19];
+function bell(){
+ if(!running)return; const t=ctx.currentTime+.03,base=tide.norm>.7?329.63:220,semi=scale[Math.floor(Math.random()*scale.length)],f=base*Math.pow(2,semi/12);
+ const g=gain(.0001),p=pan(),verb=makeVerb(rand(5,9),3.5),wet=gain(.7);p.pan.value=rand(-.8,.8);g.connect(p);p.connect(master);p.connect(verb).connect(wet).connect(master);
+ [1,2.01,3.98].forEach((m,k)=>{const o=osc('sine',f*m);const og=gain(k?(.16/k):1);o.connect(og).connect(g);o.start(t);o.stop(t+9)});
+ envelope(g,t,.018,rand(4.5,8),lerp(.035,.085,tide.norm));
+ setTimeout(bell,rand(3500,11000)/lerp(.7,1.5,tide.norm))
+}
+function shimmer(){
+ if(!running)return; if(Math.random()<lerp(.35,.8,tide.norm)){const t=ctx.currentTime+.02,g=gain(.0001),p=pan();p.pan.value=rand(-1,1);g.connect(p).connect(master);const f=rand(700,1250)*(tide.slope>=0?1.12:.94);const o=osc('sine',f);o.connect(g);o.start(t);o.stop(t+12);envelope(g,t,2.5,7,lerp(.008,.027,tide.norm))}
+ setTimeout(shimmer,rand(9000,19000))
+}
+function water(){
+ const n=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+ const src=ctx.createBufferSource();src.buffer=n;src.loop=true;const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;bp.Q.value=.7;const g=gain(.014);src.connect(bp).connect(g).connect(master);src.start();
+ const l=osc('sine',.055),lg=gain(550);l.connect(lg).connect(bp.frequency);l.start()
+}
+async function start(){
+ if(running){await ctx.suspend();running=false;$('#play').textContent='音の景色をひらく';$('#play').classList.remove('playing');return}
+ if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});master=gain(.82);compressor=ctx.createDynamicsCompressor();compressor.threshold.value=-12;compressor.knee.value=12;compressor.ratio.value=5;compressor.attack.value=.01;compressor.release.value=.35;master.connect(compressor).connect(ctx.destination);drone();water()}
+ await ctx.resume();running=true;setVolume();pad();bell();shimmer();$('#play').textContent='水景をとじる';$('#play').classList.add('playing')
+}
+function setVolume(){const v=+$('#volume').value;$('#volText').textContent=v+'%';if(master&&ctx)master.gain.setTargetAtTime(Math.pow(v/100,1.35),ctx.currentTime,.08)}
+$('#play').addEventListener('click',start);$('#volume').addEventListener('input',setVolume);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&running&&ctx?.state==='suspended')ctx.resume().catch(()=>{})});
+loadTide();setInterval(loadTide,10*60*1000);
+</script></body></html>
