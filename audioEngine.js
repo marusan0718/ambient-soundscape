@@ -505,11 +505,11 @@ class AudioEngine {
       scale: SCALES[scaleName],
       rhythm: choose(rhythmPool),
       density,
-      bpm: Math.round(42 + speed * 28 + (isMorning ? 4 : 0) - (isNight ? 8 : 0)),
-      dotChance: clamp(0.08 + density * 0.62, 0.04, 0.82),
-      lineChance: clamp(0.12 + density * 0.36 + (tide.direction === "上潮" ? 0.08 : 0), 0.06, 0.62),
+      bpm: Math.round(32 + speed * 10 - (isNight ? 4 : 0)),
+      dotChance: clamp(0.015 + density * 0.06, 0.01, 0.09),
+      lineChance: clamp(0.035 + density * 0.08, 0.02, 0.12),
       textureChance: clamp((isRain ? 0.56 : 0.18) + (weather.windSpeed > 7 ? 0.2 : 0), 0.08, 0.82),
-      accentChance: clamp(0.12 + speed * 0.42 + (isSunny ? 0.12 : 0), 0.08, 0.68),
+      accentChance: clamp(0.015 + speed * 0.04, 0.01, 0.06),
       syncopation: clamp(0.03 + speed * 0.2 + (weather.windSpeed > 7 ? 0.12 : 0), 0.02, 0.36),
       padMotion: frozen ? 0.2 : clamp(0.36 + speed * 0.5 + (tide.tideLevel > 150 ? 0.12 : 0), 0.2, 0.92),
       directionStep: tide.direction === "上潮" ? 1 : -1
@@ -528,12 +528,12 @@ class AudioEngine {
       analogPad: (timeBand === "Afternoon" ? 2 : 0) + (cloudy ? 3 : 0),
       dreamPad: (timeBand === "Morning" ? 3 : 0) + (rain ? 3 : 0) + (sunny ? 1 : 0),
       ambientPiano: timeBand === "Afternoon" ? 2 : timeBand === "Night" ? -7 : 0,
-      glassBell: (timeBand === "Morning" ? 3 : 0) + (sunny ? 2 : 0) + speed * 2,
-      glockenspiel: (sunny ? 1.5 : 0) + speed * 1.5,
-      marimba: 4 + speed * 6 + freezeCut + (timeBand === "Night" ? -5 : 0),
-      woodBlock: 5 + speed * 5 + freezeCut + (timeBand === "Night" ? -6 : 0),
-      crystalAccent: 3 + speed * 4 + (sunny ? 2 : 0) + freezeCut,
-      brushedMetal: 2 + (rain ? 7 : 0) + (weather.windSpeed > 7 ? 2 : 0) + freezeCut - 1
+      glassBell: -16 + (timeBand === "Morning" ? 1 : 0),
+      glockenspiel: -20,
+      marimba: -18 + freezeCut,
+      woodBlock: -16 + freezeCut,
+      crystalAccent: -18 + freezeCut,
+      brushedMetal: 5 + (rain ? 4 : 0) + (weather.windSpeed > 7 ? 2 : 0) + freezeCut
     };
 
     for (const source of SOUND_SOURCES) {
@@ -554,12 +554,12 @@ class AudioEngine {
       analogPad: (timeBand === "Afternoon" ? 2 : 0) + (cloudy ? 3 : 0),
       dreamPad: (timeBand === "Morning" ? 3 : 0) + (rain ? 3 : 0) + (sunny ? 1 : 0),
       ambientPiano: timeBand === "Afternoon" ? 2 : timeBand === "Night" ? -7 : 0,
-      glassBell: (timeBand === "Morning" ? 3 : 0) + (sunny ? 2 : 0) + speed * 2,
-      glockenspiel: (sunny ? 1.5 : 0) + speed * 1.5,
-      marimba: 4 + speed * 6 + freezeCut + (timeBand === "Night" ? -5 : 0),
-      woodBlock: 5 + speed * 5 + freezeCut + (timeBand === "Night" ? -6 : 0),
-      crystalAccent: 3 + speed * 4 + (sunny ? 2 : 0) + freezeCut,
-      brushedMetal: 2 + (rain ? 7 : 0) + (weather.windSpeed > 7 ? 2 : 0) + freezeCut - 1
+      glassBell: -16 + (timeBand === "Morning" ? 1 : 0),
+      glockenspiel: -20,
+      marimba: -18 + freezeCut,
+      woodBlock: -16 + freezeCut,
+      crystalAccent: -18 + freezeCut,
+      brushedMetal: 5 + (rain ? 4 : 0) + (weather.windSpeed > 7 ? 2 : 0) + freezeCut
     };
     for (const source of SOUND_SOURCES) {
       const targetDb = this.muted.get(source.id) ? -80 : this.sourceVolumes.get(source.id) + (gains[source.id] || 0);
