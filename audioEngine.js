@@ -55,7 +55,7 @@ class AudioEngine {
     this.muted = new Map();
     this.sourceVolumes = new Map(SOUND_SOURCES.map((source) => [source.id, source.volume]));
     this.settings = {
-      masterVolume: -4,
+      masterVolume: 10,
       reverbAmount: 0.42,
       lowpass: 5200,
       tremoloAmount: 0.12
