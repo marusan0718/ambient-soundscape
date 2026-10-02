@@ -30,7 +30,7 @@ const $ = (selector) => document.querySelector(selector);
 const volumeSettings = $("#volumeSettings");
 const advancedVolumeSettings = $("#advancedVolumeSettings");
 const btnFullscreen = $("#btnFullscreen");
-const BASE_MASTER_DB = -4;
+const BASE_MASTER_DB = 10;
 const BASE_SOURCE_VOLUMES = Object.fromEntries(APP_SOUND_SOURCES.map((source) => [source.id, source.volume]));
 const SOUND_GROUPS = {
   afterglow: { id: "sound-afterglow", sources: ["dreamPad"] },
