@@ -1,5 +1,3 @@
-(async () => {
-  if (window.__audioEngineReady) await window.__audioEngineReady;
 const AppAudioEngine = window.AudioEngine;
 const APP_SOUND_SOURCES = window.SOUND_SOURCES;
 const AppDemoTideProvider = window.DemoTideProvider;
@@ -32,14 +30,14 @@ const $ = (selector) => document.querySelector(selector);
 const volumeSettings = $("#volumeSettings");
 const advancedVolumeSettings = $("#advancedVolumeSettings");
 const btnFullscreen = $("#btnFullscreen");
-const BASE_MASTER_DB = 0;
+const BASE_MASTER_DB = 10;
 const BASE_SOURCE_VOLUMES = Object.fromEntries(APP_SOUND_SOURCES.map((source) => [source.id, source.volume]));
 const SOUND_GROUPS = {
-  afterglow: { id: "sound-afterglow", sources: ["layer03", "layer04"] },
-  flow: { id: "sound-flow", sources: ["layer01", "layer05"] },
-  sparkle: { id: "sound-sparkle", sources: ["layer02", "layer06"] },
-  particle: { id: "sound-particle", sources: ["layer06"] },
-  fluctuation: { id: "sound-fluctuation", sources: ["layer01", "layer02", "layer04"] }
+  afterglow: { id: "sound-afterglow", sources: ["dreamPad"] },
+  flow: { id: "sound-flow", sources: ["ambientPiano", "glassBell"] },
+  sparkle: { id: "sound-sparkle", sources: ["glockenspiel", "crystalAccent"] },
+  particle: { id: "sound-particle", sources: ["marimba", "woodBlock"] },
+  fluctuation: { id: "sound-fluctuation", sources: ["analogPad", "brushedMetal"] }
 };
 const SOURCE_TO_GROUP = Object.fromEntries(
   Object.entries(SOUND_GROUPS).flatMap(([group, spec]) => spec.sources.map((source) => [source, group]))
@@ -203,11 +201,11 @@ function createSimulationWeather() {
 function createSimulationTide() {
   const tide = appState.simulation.tide;
   const presets = {
-    rising: { tideLevel: 118, currentSpeed: 1.62, speedNorm: 0.85, motionFactor: 1, direction: "上潮", tideStill: false, tideStillPhase: "none", minutesToHighTide: 92, minutesToLowTide: 456 },
-    ebb: { tideLevel: 96, currentSpeed: 1.54, speedNorm: 0.81, motionFactor: 1, direction: "下潮", tideStill: false, tideStillPhase: "none", minutesToHighTide: 284, minutesToLowTide: 86 },
-    high: { tideLevel: 172, currentSpeed: 0.12, speedNorm: 0.06, motionFactor: 0, direction: "下潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 0, minutesToLowTide: 372 },
-    low: { tideLevel: 48, currentSpeed: 0.12, speedNorm: 0.06, motionFactor: 0, direction: "上潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 372, minutesToLowTide: 0 },
-    slack: { tideLevel: 108, currentSpeed: 0.08, speedNorm: 0.04, motionFactor: 0, direction: "下潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 186, minutesToLowTide: 186 }
+    rising: { tideLevel: 118, currentSpeed: 1.62, speedNorm: 0.85, direction: "上潮", tideStill: false, tideStillPhase: "none", minutesToHighTide: 92, minutesToLowTide: 456 },
+    ebb: { tideLevel: 96, currentSpeed: 1.54, speedNorm: 0.81, direction: "下潮", tideStill: false, tideStillPhase: "none", minutesToHighTide: 284, minutesToLowTide: 86 },
+    high: { tideLevel: 172, currentSpeed: 0.12, speedNorm: 0.06, direction: "下潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 0, minutesToLowTide: 372 },
+    low: { tideLevel: 48, currentSpeed: 0.12, speedNorm: 0.06, direction: "上潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 372, minutesToLowTide: 0 },
+    slack: { tideLevel: 108, currentSpeed: 0.08, speedNorm: 0.04, direction: "下潮", tideStill: true, tideStillPhase: "center", minutesToHighTide: 186, minutesToLowTide: 186 }
   };
   const selected = presets[tide] || presets.ebb;
   return {
@@ -484,5 +482,3 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) updateWeather();
 });
 setInterval(tick, 3000);
-
-})();
