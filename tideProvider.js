@@ -47,30 +47,6 @@ function closestEvent(now, phaseMinutes, targetPhase) {
   }, null);
 }
 
-function tideStillState(closest) {
-  // Takanawa reference:
-  // 10 min easing -> 10 min flat/freeze -> 10 min easing.
-  const absMinutes = closest.absMinutes;
-  const signedMinutes = closest.signedMinutes;
-  const tideStill = absMinutes <= 15;
-  let tideStillPhase = "none";
-  let motionFactor = 1;
-
-  if (tideStill) {
-    if (signedMinutes > 5) tideStillPhase = "before";
-    else if (signedMinutes >= -5) tideStillPhase = "center";
-    else tideStillPhase = "after";
-
-    if (absMinutes <= 5) {
-      motionFactor = 0;
-    } else {
-      motionFactor = clamp((absMinutes - 5) / 10, 0, 1);
-    }
-  }
-
-  return { tideStill, tideStillPhase, motionFactor };
-}
-
 class DemoTideProvider {
   constructor() {
     this.enabled = true;
@@ -98,8 +74,14 @@ class DemoTideProvider {
     const closest = closestHigh.absMinutes <= closestLow.absMinutes
       ? { type: "満潮", ...closestHigh }
       : { type: "干潮", ...closestLow };
+    const tideStill = closest.absMinutes <= 30;
+    let tideStillPhase = "none";
 
-    const still = tideStillState(closest);
+    if (tideStill) {
+      if (closest.signedMinutes > 10) tideStillPhase = "before";
+      else if (closest.signedMinutes >= -10) tideStillPhase = "center";
+      else tideStillPhase = "after";
+    }
 
     return {
       demo: this.enabled,
@@ -111,14 +93,9 @@ class DemoTideProvider {
       lowTideTime,
       minutesToHighTide: minutesBetween(highTideTime, now),
       minutesToLowTide: minutesBetween(lowTideTime, now),
-      tideStill: still.tideStill,
-      tideStillPhase: still.tideStillPhase,
-      motionFactor: still.motionFactor,
-      closestEvent: {
-        type: closest.type,
-        minutes: closest.absMinutes,
-        signedMinutes: closest.signedMinutes
-      }
+      tideStill,
+      tideStillPhase,
+      closestEvent: { type: closest.type, minutes: closest.absMinutes, signedMinutes: closest.signedMinutes }
     };
   }
 }
